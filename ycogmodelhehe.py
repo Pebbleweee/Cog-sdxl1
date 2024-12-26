@@ -4,7 +4,7 @@ import _util
 
 
 def main(args):
-  _util.download_model(848118)
+  _util.download_model(889818)
 
   _util.replace_defaults({
     'DEFAULT_VAE_NAME': None,
@@ -12,12 +12,12 @@ def main(args):
     'DEFAULT_NEG_PREPROMPT': "score_6, score_5, score_4, lowres, bad anatomy, bad hands, signature, watermarks, ugly, imperfect eyes, skewed eyes, unnatural face, unnatural body, error, extra limb, missing limbs, bad art, bad painting, bad photo, bad image, ",
     'DEFAULT_POSITIVE_PROMPT': "safe",
     'DEFAULT_NEGATIVE_PROMPT': "",
-    'DEFAULT_CFG': 9,
-    'DEFAULT_CLIP_SKIP': 1,
-    'DEFAULT_WIDTH': 832,
-    'DEFAULT_HEIGHT': 1216,
+    'DEFAULT_CFG': 7,
+    'DEFAULT_CLIP_SKIP': 2,
+    'DEFAULT_WIDTH': 1024,
+    'DEFAULT_HEIGHT': 1024,
     'DEFAULT_SCHEDULER': "Euler a",
-    'DEFAULT_STEPS': 30
+    'DEFAULT_STEPS': 40
   })
 
 
