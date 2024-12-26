@@ -1,0 +1,80 @@
+name: Push to Replicate
+
+on:
+  workflow_dispatch:
+    inputs:
+      replicate_name:
+        description: "Enter the model on Replicate, like: alice/pony6"
+        required: true
+
+env:
+  PIP_NO_CACHE_DIR: 1
+
+jobs:
+  push_to_replicate:
+    name: Push to Replicate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify secrets are set
+        uses: svrooij/secret-gate-action@v1.2
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+        with:
+          inputsToCheck: 'CIVITAI_API_TOKEN,REPLICATE_API_TOKEN'
+          failOnMissing: 'true'
+
+      - name: Free disk space (1)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          android: true
+          dotnet: true
+          haskell: true
+          docker-images: false
+          large-packages: false
+          tool-cache: false
+          swap-storage: false
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Download models
+        env:
+          CIVITAI_API_TOKEN: ${{ secrets.CIVITAI_API_TOKEN }}
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+          REPLICATE_NAME: ${{ inputs.replicate_name }}
+          ARIA2: https://github.com/abcfy2/aria2-static-build/releases/download/continuous/aria2-x86_64-linux-musl_static.zip
+          # Specific commit
+          #COG_SDXL: https://api.github.com/repos/LagPixelLOL/cog-sdxl/tarball/39addf7b482380904d3f8bb77b090f26e1004161
+          # Latest
+          #COG_SDXL: https://api.github.com/repos/LagPixelLOL/cog-sdxl/tarball/main
+          # Drago's repo
+          COG_SDXL: https://api.github.com/repos/ZaDrago21/cog-sdxl/tarball/main
+        run: |
+          mkdir .github/.bin
+          (cd .github/.bin && curl -sfSL $ARIA2 | jar xvf /dev/stdin && chmod +x aria2c)
+          curl -sfSLH "Authorization: token ${{ github.token }}" $COG_SDXL | tar -zxf - --strip=1
+          export PYTHONPATH="$PWD/.github"
+          python ".github/${REPLICATE_NAME##*/}.py"
+
+      - name: Free disk space (2)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          large-packages: true
+          swap-storage: true
+          tool-cache: true
+          android: false
+          docker-images: false
+          dotnet: false
+          haskell: false
+
+      - name: Setup Cog
+        uses: replicate/setup-cog@v2
+        with:
+          cog-version: v0.9.23
+          token: ${{ secrets.REPLICATE_API_TOKEN }}
+
+      - name: Push to Replicate
+        run: cog push r8.im/${{ inputs.replicate_name }} --separate-weights
