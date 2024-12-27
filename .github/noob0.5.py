@@ -4,7 +4,7 @@ import _util
 
 
 def main(args):
-  _util.download_model(968495)
+  _util.download_model(1166878)
 
   _util.replace_defaults({
     'DEFAULT_VAE_NAME': None,
